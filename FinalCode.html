@@ -2,243 +2,227 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Mind Reader Number Guessing Game</title>
+<title>Mind Reader: AI Edition</title>
 
 <style>
+    /* Base Styles */
     body {
-        font-family: 'Segoe UI', Tahoma, sans-serif;
-        background-color: #f4f7fb;
-        color: #333;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background-color: #f0f2f5;
+        color: #1a1a1a;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
         margin: 0;
-        transition: background 0.6s ease, color 0.6s ease;
+        overflow: hidden;
+        transition: all 0.5s ease;
     }
 
-    /* ===== GLITCH STAGES ===== */
-
-    .glitch-1 {
-        background-image:
-            repeating-linear-gradient(
-                0deg,
-                rgba(0,0,0,0.03),
-                rgba(0,0,0,0.03) 1px,
-                transparent 1px,
-                transparent 3px
-            );
+    /* Dynamic Glitch Backgrounds */
+    .level-1 { background-color: #e1e8ed; }
+    .level-2 { background-color: #d1d8e0; border: 5px solid #3498db; }
+    .level-3 { background-color: #2c3e50; color: white; }
+    .level-max { 
+        background-color: #000; 
+        color: #ff0000; 
+        text-shadow: 2px 2px #550000;
+        animation: shake 0.2s infinite;
     }
 
-    .glitch-2 {
-        background-image:
-            repeating-linear-gradient(
-                90deg,
-                rgba(0,0,0,0.08),
-                rgba(0,0,0,0.08) 2px,
-                transparent 2px,
-                transparent 5px
-            ),
-            repeating-linear-gradient(
-                0deg,
-                rgba(0,0,0,0.06),
-                rgba(0,0,0,0.06) 2px,
-                transparent 2px,
-                transparent 6px
-            );
+    @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        20% { transform: translate(-1px, -2px) rotate(-1deg); }
+        50% { transform: translate(-3px, 1px) rotate(1deg); }
+        100% { transform: translate(1px, -1px) rotate(0deg); }
     }
 
-    .glitch-3 {
-        background-image:
-            repeating-linear-gradient(
-                0deg,
-                rgba(0,0,0,0.15),
-                rgba(0,0,0,0.15) 4px,
-                transparent 4px,
-                transparent 8px
-            ),
-            repeating-linear-gradient(
-                90deg,
-                rgba(0,0,0,0.15),
-                rgba(0,0,0,0.15) 4px,
-                transparent 4px,
-                transparent 8px
-            );
-    }
-
-    .glitch-max {
-        background-color: #111;
-        color: #eee;
-        background-image:
-            repeating-linear-gradient(
-                0deg,
-                rgba(255,255,255,0.2),
-                rgba(255,255,255,0.2) 6px,
-                transparent 6px,
-                transparent 12px
-            ),
-            repeating-linear-gradient(
-                90deg,
-                rgba(255,255,255,0.2),
-                rgba(255,255,255,0.2) 6px,
-                transparent 6px,
-                transparent 12px
-            );
-    }
-
-    /* ===== GAME UI ===== */
-
-    .game-container {
-        background: white;
-        padding: 30px;
-        width: 400px;
-        border-radius: 10px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        text-align: center;
-    }
-
-    h1 {
-        margin-top: 0;
-        color: #2c3e50;
-    }
-
-    select, input {
+    .game-card {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 40px;
         width: 100%;
-        padding: 10px;
-        margin: 10px 0;
-        font-size: 16px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
+        max-width: 400px;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        text-align: center;
+        transition: transform 0.3s ease;
     }
 
-    button {
-        padding: 10px 20px;
-        font-size: 16px;
-        border: none;
-        border-radius: 5px;
-        background-color: #3498db;
+    .level-max .game-card {
+        background: rgba(20, 20, 20, 0.9);
+        border: 2px solid #ff0000;
         color: white;
-        cursor: pointer;
-        margin-top: 10px;
     }
 
-    button:hover {
-        background-color: #2980b9;
+    h1 { margin-bottom: 10px; }
+    
+    /* Progress Bar */
+    .progress-container {
+        background: #eee;
+        border-radius: 10px;
+        height: 10px;
+        margin: 20px 0;
+        overflow: hidden;
+    }
+    #progress-bar {
+        background: #3498db;
+        height: 100%;
+        width: 0%;
+        transition: width 0.4s ease, background 0.4s;
     }
 
-    #feedback {
-        margin-top: 15px;
+    input[type="number"] {
+        width: 80%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 1.2rem;
+        text-align: center;
+        outline: none;
+    }
+
+    .btn-group { margin-top: 20px; }
+    
+    button {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
         font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+        margin: 5px;
     }
 
-    .success { color: green; }
-    .error { color: red; }
-    .warning { color: orange; }
-    .info { color: #555; }
+    .btn-guess { background: #3498db; color: white; }
+    .btn-guess:hover { background: #2980b9; transform: scale(1.05); }
+    .btn-reset { background: #95a5a6; color: white; }
 
-    .footer-link {
-        margin-top: 20px;
-        display: block;
-        font-size: 14px;
-    }
+    #feedback { font-size: 1.1rem; margin-top: 20px; min-height: 1.5em; }
 </style>
 </head>
 
 <body>
 
-<div class="game-container">
-    <h1>🤖 Mind Reader</h1>
-    <p>I’m thinking of a number… can you guess it?</p>
+<div class="game-card">
+    <h1 id="title">🤖 Mind Reader</h1>
+    <p>The AI has chosen a number. Can you extract it?</p>
 
-    <label for="difficulty">Choose difficulty:</label>
-    <select id="difficulty">
-        <option value="10">Easy (1–10)</option>
-        <option value="50">Medium (1–50)</option>
-        <option value="100" selected>Hard (1–100)</option>
+    <select id="difficulty" style="margin-bottom: 15px; padding: 5px;">
+        <option value="10">Easy (1-10)</option>
+        <option value="50">Medium (1-50)</option>
+        <option value="100" selected>Hard (1-100)</option>
     </select>
 
-    <input type="number" id="guessInput" placeholder="Enter your guess">
+    <div class="progress-container">
+        <div id="progress-bar"></div>
+    </div>
 
-    <button onclick="makeGuess()">Guess</button>
-    <button onclick="resetGame()">Restart</button>
+    <input type="number" id="guessInput" placeholder="Enter Guess" autofocus>
 
-    <p id="feedback" class="info"></p>
-    <p id="attempts" class="info"></p>
+    <div class="btn-group">
+        <button class="btn-guess" onclick="makeGuess()">Analyze</button>
+        <button class="btn-reset" onclick="resetGame()">Reset System</button>
+    </div>
 
+    <p id="feedback">System Ready.</p>
+    <p id="attempts-text" style="font-size: 0.8rem; color: #7f8c8d;">Attempts Used: 0 / 10</p>
+    
+    <a href="scratch.html" style="display:block; margin-top:20px; color:#3498db; text-decoration:none; font-size:0.9rem;">← Back to Scratch Page</a>
 </div>
 
 <script>
     let maxNumber = 100;
     let secretNumber = Math.floor(Math.random() * maxNumber) + 1;
     let attempts = 0;
-    let maxAttempts = 10;
+    const maxAttempts = 10;
 
-    document.getElementById("difficulty").addEventListener("change", function () {
+    const input = document.getElementById("guessInput");
+    
+    // Allow "Enter" key to submit guess
+    input.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") makeGuess();
+    });
+
+    document.getElementById("difficulty").addEventListener("change", function() {
         maxNumber = parseInt(this.value);
         resetGame();
     });
 
     function makeGuess() {
-        const guess = Number(document.getElementById("guessInput").value);
+        const guess = parseInt(input.value);
         const feedback = document.getElementById("feedback");
+        const bar = document.getElementById("progress-bar");
 
-        attempts++;
-
-        if (!guess || guess < 1 || guess > maxNumber) {
-            feedback.textContent = `Please enter a number between 1 and ${maxNumber}.`;
-            feedback.className = "warning";
-            attempts--;
+        if (isNaN(guess) || guess < 1 || guess > maxNumber) {
+            feedback.textContent = "Error: Input out of bounds.";
+            feedback.style.color = "#e67e22";
             return;
         }
 
+        attempts++;
+        updateUI(guess);
+
         if (guess === secretNumber) {
-            feedback.textContent = `🎉 Correct! You guessed it in ${attempts} tries.`;
-            feedback.className = "success";
-            disableInput();
+            feedback.textContent = "SUCCESS: Mind match found!";
+            feedback.style.color = "#27ae60";
+            endGame(true);
         } else if (attempts >= maxAttempts) {
-            feedback.textContent = `💀 Game Over! The number was ${secretNumber}.`;
-            feedback.className = "error";
-            disableInput();
-        } else if (guess < secretNumber) {
-            feedback.textContent = "Too low! Try again.";
-            feedback.className = "error";
+            feedback.textContent = `CRITICAL FAILURE: Number was ${secretNumber}`;
+            feedback.style.color = "#c0392b";
+            endGame(false);
         } else {
-            feedback.textContent = "Too high! Try again.";
-            feedback.className = "error";
+            feedback.textContent = guess < secretNumber ? "STATUS: Too Low" : "STATUS: Too High";
+            feedback.style.color = "#34495e";
         }
-
-        document.getElementById("attempts").textContent =
-            `Attempts: ${attempts} / ${maxAttempts}`;
-
-        updateGlitchBackground();
+        
+        input.value = "";
+        input.focus();
     }
 
-    function updateGlitchBackground() {
-        document.body.className = "";
+    function updateUI() {
+        const percentage = (attempts / maxAttempts) * 100;
+        const bar = document.getElementById("progress-bar");
+        bar.style.width = percentage + "%";
+        
+        document.getElementById("attempts-text").textContent = `Attempts Used: ${attempts} / ${maxAttempts}`;
 
-        if (attempts >= 10) {
-            document.body.classList.add("glitch-max");
+        // Dynamic Styling based on attempts
+        if (attempts >= 9) {
+            document.body.className = "level-max";
+            bar.style.background = "#ff0000";
         } else if (attempts >= 7) {
-            document.body.classList.add("glitch-3");
+            document.body.className = "level-3";
+            bar.style.background = "#e67e22";
         } else if (attempts >= 4) {
-            document.body.classList.add("glitch-2");
-        } else if (attempts >= 2) {
-            document.body.classList.add("glitch-1");
+            document.body.className = "level-2";
+            bar.style.background = "#f1c40f";
+        } else {
+            document.body.className = "level-1";
+        }
+    }
+
+    function endGame(win) {
+        input.disabled = true;
+        document.querySelector(".btn-guess").disabled = true;
+        if(win) {
+            document.getElementById("title").textContent = "🔓 Access Granted";
+        } else {
+            document.getElementById("title").textContent = "🔒 System Locked";
         }
     }
 
     function resetGame() {
         secretNumber = Math.floor(Math.random() * maxNumber) + 1;
         attempts = 0;
-        document.getElementById("guessInput").value = "";
-        document.getElementById("feedback").textContent = "";
-        document.getElementById("attempts").textContent = "";
-        document.getElementById("guessInput").disabled = false;
         document.body.className = "";
-    }
-
-    function disableInput() {
-        document.getElementById("guessInput").disabled = true;
+        input.disabled = false;
+        input.value = "";
+        document.querySelector(".btn-guess").disabled = false;
+        document.getElementById("progress-bar").style.width = "0%";
+        document.getElementById("feedback").textContent = "System Ready.";
+        document.getElementById("feedback").style.color = "#333";
+        document.getElementById("title").textContent = "🤖 Mind Reader";
+        document.getElementById("attempts-text").textContent = "Attempts Used: 0 / 10";
     }
 </script>
 
